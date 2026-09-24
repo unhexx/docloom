@@ -31,6 +31,8 @@ docker compose --profile test run --rm --build test
 | `book.py` | Склейка книги и статус |
 | `publisher/html.py` | HTML, индекс, llms, манифест |
 | `publisher/templates/` | Вёрстка, стили, поиск |
+| `hooks.py` | GitHub и Bitbucket → постановка билда |
+| `watch.py` | Опрос одного репозитория |
 | `api.py` | HTTP |
 | `db.py` | SQLite, очередь, запрет второго `running` на ту же версию |
 | `jobs.py` | Один билд от источника до каталога |

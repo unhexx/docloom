@@ -17,6 +17,11 @@ class Settings:
     webhook_secret: str
     host: str
     port: int
+    git_token: str = ""
+    git_ssl_verify: bool = True
+    watch_url: str = ""
+    watch_ref: str = "master"
+    watch_interval: int = 60
 
 
 def load_settings() -> Settings:
@@ -34,4 +39,9 @@ def load_settings() -> Settings:
         webhook_secret=os.environ.get("DOCLOOM_WEBHOOK_SECRET", ""),
         host=os.environ.get("DOCLOOM_HOST", "127.0.0.1"),
         port=int(os.environ.get("DOCLOOM_PORT", "8000")),
+        git_token=os.environ.get("DOCLOOM_GIT_TOKEN", ""),
+        git_ssl_verify=os.environ.get("DOCLOOM_GIT_SSL_VERIFY", "1") != "0",
+        watch_url=os.environ.get("DOCLOOM_WATCH_URL", ""),
+        watch_ref=os.environ.get("DOCLOOM_WATCH_REF", "master"),
+        watch_interval=max(15, int(os.environ.get("DOCLOOM_WATCH_INTERVAL", "60"))),
     )

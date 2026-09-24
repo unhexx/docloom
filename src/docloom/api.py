@@ -14,6 +14,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from docloom.db import Store
+from docloom.hooks import parse_hook
 from docloom.jobs import execute_build
 from docloom.settings import Settings, load_settings
 from docloom.source import SourceError, ensure_allowed, version_from_ref
@@ -103,38 +104,46 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(status_code=400, detail="ожидался JSON") from exc
         if not isinstance(payload, dict):
             raise HTTPException(status_code=400, detail="ожидался объект")
-        if payload.get("zen") and payload.get("hook_id"):
-            return JSONResponse({"ok": True, "ignored": "ping"})
-        after = str(payload.get("after") or "")
-        if payload.get("deleted") or after == "0" * 40:
-            return JSONResponse({"ok": True, "ignored": "delete"})
-        repository = payload.get("repository") if isinstance(payload.get("repository"), dict) else {}
-        project = app.state.store.find_project(
-            name=repository.get("name") if isinstance(repository.get("name"), str) else None,
-            clone_url=repository.get("clone_url") if isinstance(repository.get("clone_url"), str) else None,
-        )
+        event = parse_hook(payload)
+        project = app.state.store.find_project(name=event.name, clone_urls=event.clone_urls)
         secret = ""
         if project is not None and project["webhook_secret"]:
             secret = str(project["webhook_secret"])
         elif current.webhook_secret:
             secret = current.webhook_secret
-        if secret and not _signature_ok(secret, body, request.headers.get("x-hub-signature-256", "")):
+        if secret and not _signature_ok(secret, body, request.headers):
             raise HTTPException(status_code=401, detail="подпись webhook не сошлась")
+        if event.action == "ignore":
+            return JSONResponse({"ok": True, "ignored": event.reason})
         if project is None:
             raise HTTPException(status_code=404, detail="проект не найден")
-        try:
-            version_name = version_from_ref(str(payload.get("ref") or "latest"))
-        except SourceError as exc:
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
-        build = app.state.store.enqueue(int(project["id"]), str(payload.get("ref") or "latest"), version_name)
-        if current.sync_builds:
-            execute_build(app.state.store, current, int(build["id"]))
-            build = app.state.store.public_build(app.state.store.get_build(int(build["id"])))
-        return JSONResponse({"ok": True, "build": build}, status_code=202)
+        builds = []
+        for ref in event.refs:
+            try:
+                version_name = version_from_ref(ref)
+            except SourceError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+            build = app.state.store.enqueue(int(project["id"]), ref, version_name)
+            if current.sync_builds:
+                execute_build(app.state.store, current, int(build["id"]))
+                build = app.state.store.public_build(app.state.store.get_build(int(build["id"])))
+            builds.append(build)
+        return JSONResponse({"ok": True, "build": builds[0], "builds": builds}, status_code=202)
 
     return app
 
 
-def _signature_ok(secret: str, body: bytes, header: str) -> bool:
+def _signature_ok(secret: str, body: bytes, headers) -> bool:
     expected = "sha256=" + hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
-    return hmac.compare_digest(expected, header)
+    presented = [
+        headers.get("x-hub-signature-256", ""),
+        headers.get("x-hub-signature", ""),
+    ]
+    return any(item and _same(expected, item) for item in presented)
+
+
+def _same(expected: str, presented: str) -> bool:
+    try:
+        return hmac.compare_digest(expected, presented)
+    except ValueError:
+        return False

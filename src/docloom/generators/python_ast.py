@@ -49,7 +49,7 @@ class PythonExtraction:
 
 def extract_python(project_root: Path) -> PythonExtraction:
     root = Path(project_root)
-    config = ProjectConfig.load(root / "docloom.yml")
+    config = ProjectConfig.from_root(root)
     labels = _LABELS["ru"] if config.language.lower().startswith("ru") else _LABELS["en"]
     pages: list[Page] = []
     warnings: list[WarningItem] = []

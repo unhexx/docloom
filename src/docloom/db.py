@@ -90,26 +90,44 @@ class Store:
             raise KeyError(project_id)
         return row
 
-    def find_project(self, *, name: str | None, clone_url: str | None) -> sqlite3.Row | None:
+    def find_project(
+        self,
+        *,
+        name: str | None,
+        clone_url: str | None = None,
+        clone_urls: tuple[str, ...] | list[str] | None = None,
+    ) -> sqlite3.Row | None:
+        from docloom.source import normalize_git_url
+
+        wanted = {normalize_git_url(item) for item in (clone_urls or ()) if item}
         if clone_url:
-            row = self.conn.execute(
-                "SELECT * FROM projects WHERE git_url = ?",
-                (clone_url,),
-            ).fetchone()
-            if row is not None:
-                return row
+            wanted.add(normalize_git_url(clone_url))
+        wanted.discard("")
+        rows = self.conn.execute("SELECT * FROM projects").fetchall()
+        if wanted:
+            for row in rows:
+                if row["git_url"] and normalize_git_url(str(row["git_url"])) in wanted:
+                    return row
         if name:
-            return self.conn.execute("SELECT * FROM projects WHERE name = ?", (name,)).fetchone()
+            for row in rows:
+                if row["name"] == name:
+                    return row
         return None
 
-    def enqueue(self, project_id: int, ref: str, version_name: str) -> dict[str, object]:
+    def enqueue(
+        self,
+        project_id: int,
+        ref: str,
+        version_name: str,
+        sha: str | None = None,
+    ) -> dict[str, object]:
         with self._lock:
             cursor = self.conn.execute(
                 """
-                INSERT INTO builds (project_id, ref, version_name, status)
-                VALUES (?, ?, ?, 'queued')
+                INSERT INTO builds (project_id, ref, version_name, sha, status)
+                VALUES (?, ?, ?, ?, 'queued')
                 """,
-                (project_id, ref, version_name),
+                (project_id, ref, version_name, sha),
             )
             self.conn.commit()
             build_id = int(cursor.lastrowid)
@@ -183,7 +201,7 @@ class Store:
             self.conn.execute(
                 """
                 UPDATE builds
-                SET status = ?, sha = ?, warnings = ?, finished_at = ?, log_path = ?, artifact_path = ?
+                SET status = ?, sha = COALESCE(?, sha), warnings = ?, finished_at = ?, log_path = ?, artifact_path = ?
                 WHERE id = ?
                 """,
                 (status, sha, warnings_json, utcnow(), log_path, artifact_path, build_id),
@@ -211,6 +229,33 @@ class Store:
         if row is None:
             raise KeyError(build_id)
         return row
+
+    def has_active(self, project_id: int, version_name: str) -> bool:
+        row = self.conn.execute(
+            """
+            SELECT 1 FROM builds
+            WHERE project_id = ? AND version_name = ? AND status IN ('queued', 'running')
+            LIMIT 1
+            """,
+            (project_id, version_name),
+        ).fetchone()
+        return row is not None
+
+    def latest_sha(self, project_id: int, version_name: str) -> str | None:
+        row = self.conn.execute(
+            """
+            SELECT sha FROM builds
+            WHERE project_id = ? AND version_name = ?
+              AND status IN ('success', 'success_with_warnings')
+              AND sha IS NOT NULL
+            ORDER BY id DESC
+            LIMIT 1
+            """,
+            (project_id, version_name),
+        ).fetchone()
+        if row is None or not row["sha"]:
+            return None
+        return str(row["sha"])
 
     def version_names(self, project_id: int) -> list[str]:
         rows = self.conn.execute(
