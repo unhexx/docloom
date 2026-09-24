@@ -1,2 +1,23 @@
-# docloom
-Docloom — design package for a self-hosted GitBook-style docs platform with automatic generation from source
+# Docloom
+
+Самостоятельная платформа документации: GitBook-подобный читатель + конвейер автоматической генерации в духе Read the Docs.
+
+Этот каталог — **пакет проектирования**, не готовый продукт. Реализацию и развёртывание выполняют локальные агенты по `PLAN.md` и `.agent/WORKFLOW.yaml`.
+
+- Продуктовое имя: **Docloom**
+- Слоган: *Documentation that weaves itself from source*
+- Репозиторий (целевой): `unhexx/docloom`
+- Конфиг проекта-источника: `docloom.yml`
+
+## Документы
+
+| Файл | Назначение |
+| --- | --- |
+| `RESEARCH.md` | Сравнение Read the Docs и локального GitBook, пробелы рынка |
+| `DESIGN.md` | Целевая архитектура, контракты, приоритет автогенерации |
+| `PLAN.md` | Пошаговый план для локальных агентов (INVEST, чекпоинты, Definition of Done) |
+| `.agent/WORKFLOW.yaml` | Детерминированный workflow с resume |
+
+## Чего здесь нет
+
+Кода сервиса, `docker-compose.yml` и тестов — их создают агенты на волнах 1–6 плана. Не считать заглушки реализацией.

@@ -1,0 +1,72 @@
+name: docloom-mvp
+version: 1
+product: Docloom
+source_of_truth:
+  - DESIGN.md
+  - PLAN.md
+resume_from: last_successful_checkpoint
+streams:
+  - id: META
+    steps:
+      - id: C0
+        type: checkpoint
+        description: Toolchain, pyproject, demo-lib tree, empty evidence
+        on_failure: abort
+  - id: PRODUCT-GEN
+    steps:
+      - id: C1
+        type: task
+        description: Python AST autodoc + IR + identical rebuild tests
+        depends_on: [C0]
+        evidence_required: [tests_python_ast]
+        checkpoint: true
+      - id: C2
+        type: task
+        description: OpenAPI pages + guides weave + SUMMARY
+        depends_on: [C1]
+        evidence_required: [tests_weave]
+        checkpoint: true
+  - id: PRODUCT-PUB
+    steps:
+      - id: C3
+        type: task
+        description: GitBook-like static theme, search index, llms.txt
+        depends_on: [C2]
+        evidence_required: [tests_publisher]
+        checkpoint: true
+  - id: PRODUCT-CTRL
+    steps:
+      - id: C4
+        type: task
+        description: FastAPI + worker + SQLite builds on demo-lib
+        depends_on: [C2]
+        evidence_required: [tests_api_build]
+        checkpoint: true
+  - id: OPS
+    steps:
+      - id: C5
+        type: task
+        description: docker compose api worker nginx health smoke
+        depends_on: [C3, C4]
+        on_failure: retry
+        blocked_if: docker_daemon_absent
+        evidence_required: [compose_ps_healthy, curl_health]
+        checkpoint: true
+      - id: C6
+        type: task
+        description: regression fixtures, webhook fixture, README quickstart
+        depends_on: [C5]
+        evidence_required: [wave6_evidence]
+        checkpoint: true
+synchronization_points:
+  - id: before_compose
+    wait_for: [C3, C4]
+human_gates:
+  - id: review-mvp
+    after: C6
+    prompt: Accept MVP or open v1.1 backlog
+safety:
+  no_fork_gitbook_renderer: true
+  no_exec_user_python_in_mvp: true
+  no_custom_build_commands_in_mvp: true
+  destructive_compose_requires_human: true
