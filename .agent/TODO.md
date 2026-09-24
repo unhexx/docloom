@@ -10,8 +10,8 @@
 
 ## Спринт 1 — Python autodoc
 
-- [ ] C1: `ProjectConfig`, IR, обход AST, Markdown символа
-- [ ] Повторный прогон байт-в-байт, страница класса `Client`, предупреждение без docstring
+- [x] C1: `ProjectConfig`, IR, обход AST, Markdown символа
+- [x] Повторный прогон байт-в-байт, страница класса `Client`, предупреждение без docstring
 
 ## Спринт 2 — книга
 
