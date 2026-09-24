@@ -42,6 +42,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def health() -> dict[str, str]:
         return {"status": "ok"}
 
+    @app.get("/api/projects")
+    def list_projects() -> list[dict[str, object]]:
+        return app.state.store.list_projects()
+
     @app.post("/api/projects", status_code=201)
     def create_project(body: ProjectIn) -> dict[str, object]:
         if not _NAME.fullmatch(body.name):

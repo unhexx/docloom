@@ -62,6 +62,7 @@ def test_demo_build_publishes_files(tmp_path: Path) -> None:
     settings = _settings(tmp_path)
     client = TestClient(create_app(settings))
     assert client.get("/health").json() == {"status": "ok"}
+    assert client.get("/api/projects").json() == []
     denied = client.post("/api/projects", json={"name": "nope", "local_path": "/etc"})
     assert denied.status_code == 400
     created = client.post("/api/projects", json={"name": "demo-lib", "local_path": str(DEMO)})

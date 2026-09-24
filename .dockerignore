@@ -1,0 +1,12 @@
+.venv
+.git
+.agent
+publish
+data
+**/__pycache__
+**/.pytest_cache
+**/*.pyc
+agentic_loop_template
+.env
+.env.agentic
+*.sqlite
