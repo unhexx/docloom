@@ -53,14 +53,17 @@
     var hits = [];
     for (var i = 0; i < index.length; i += 1) {
       var item = index[i];
-      var hay = (item.title + " " + (item.body || "")).toLowerCase();
-      if (hay.indexOf(needle) !== -1) {
-        hits.push(item);
-      }
-      if (hits.length === 8) {
-        break;
+      var title = (item.title || "").toLowerCase();
+      var body = (item.body || "").toLowerCase();
+      var rank = title === needle ? 0 : title.indexOf(needle) !== -1 ? 1 : body.indexOf(needle) !== -1 ? 2 : -1;
+      if (rank >= 0) {
+        hits.push({ item: item, rank: rank, order: i });
       }
     }
+    hits.sort(function (left, right) {
+      return left.rank - right.rank || left.order - right.order;
+    });
+    hits = hits.slice(0, 8).map(function (entry) { return entry.item; });
     if (!hits.length) {
       box.hidden = false;
       box.innerHTML = "<p class=\"empty\">Ничего не найдено</p>";

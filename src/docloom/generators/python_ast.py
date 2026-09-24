@@ -9,6 +9,7 @@ from pathlib import Path, PurePosixPath
 from docloom.config import ProjectConfig
 from docloom.ignore import is_excluded
 from docloom.ir import Page, SourceLoc, WarningItem
+from docloom.textfmt import md_label
 
 _LABELS = {
     "ru": {
@@ -281,7 +282,7 @@ def _render_block(
     source_line: int,
     labels: dict[str, str],
 ) -> str:
-    lines = [f"# {title}", ""]
+    lines = [f"# {md_label(title)}", ""]
     if signature or decorators:
         lines.append("```python")
         lines.extend(decorators)
@@ -315,7 +316,7 @@ def _member_table(
     rows = [f'<a id="{anchor}"></a>', "", f"## {heading}", ""]
     for name, target in members:
         href = _relative(from_path, target)
-        rows.append(f"- [{name}]({href})")
+        rows.append(f"- [{md_label(name)}]({href})")
     rows.append("")
     return "\n".join(rows)
 

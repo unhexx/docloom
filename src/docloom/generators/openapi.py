@@ -10,6 +10,7 @@ import yaml
 
 from docloom.config import ProjectConfig
 from docloom.ir import Page, SourceLoc, WarningItem
+from docloom.textfmt import md_label
 
 _METHODS = ("get", "post", "put", "patch", "delete", "head", "options", "trace")
 _SLUG = re.compile(r"[^a-z0-9]+")
@@ -81,7 +82,7 @@ def _operation_page(
     slug = _slug(method, path)
     summary = str(operation.get("summary") or operation.get("description") or "").strip()
     op_id = operation.get("operationId")
-    lines = [f"# {title}", ""]
+    lines = [f"# {md_label(title)}", ""]
     if summary:
         lines.extend([summary, ""])
     if isinstance(op_id, str) and op_id:

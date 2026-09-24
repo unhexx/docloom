@@ -49,6 +49,7 @@ def publish(
         _write_page(
             template,
             target / href,
+            root=target,
             book=book,
             page=page,
             href=href,
@@ -76,6 +77,7 @@ def publish(
     _write_page(
         template,
         target / "index.html",
+        root=target,
         book=book,
         page=first[0],
         href=first[1],
@@ -90,6 +92,7 @@ def publish(
     _write_page(
         template,
         target / "404.html",
+        root=target,
         book=book,
         page=Page("404", "meta", _ui(book)["missing"], "404.html", (), None, ""),
         href="404.html",
@@ -119,6 +122,7 @@ def _write_page(
     template,
     destination: Path,
     *,
+    root: Path,
     book: Book,
     page: Page,
     href: str,
@@ -130,10 +134,8 @@ def _write_page(
     next_page: dict[str, str] | None,
     active: str | None = None,
 ) -> None:
-    if destination.name in {"index.html", "404.html"} and "/" not in href:
-        prefix = ""
-    else:
-        prefix = _asset_prefix(href)
+    placed = destination.resolve().relative_to(root.resolve()).as_posix()
+    prefix = _asset_prefix(placed)
     ui = _ui(book)
     search_href = f"{prefix}search-index.json"
     rendered_groups = []

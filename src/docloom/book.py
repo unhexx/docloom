@@ -24,7 +24,7 @@ class Book:
 
 
 def build_book(project_root: Path, *, version: str | None = None) -> Book:
-    root = Path(project_root)
+    root = Path(project_root).resolve()
     config = ProjectConfig.load(root / "docloom.yml")
     guides, guide_warnings = extract_guides(root, config)
     python = extract_python(root)

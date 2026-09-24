@@ -19,6 +19,12 @@ def test_publish_demo_site(tmp_path: Path) -> None:
     index = (dest / "index.html").read_text(encoding="utf-8")
     assert "demo-lib" in index
     assert 'class="brand"' in index
+    assert 'href="assets/theme.css"' in index
+    assert 'href="../assets/theme.css"' not in index
+    assert 'href="index.html">demo-lib' in index
+    intro = (dest / "docs" / "intro.html").read_text(encoding="utf-8")
+    assert 'href="../assets/theme.css"' in intro
+    assert 'href="../index.html">demo-lib' in intro
     client_pages = list(dest.glob("generated/python/**/Client.html"))
     assert client_pages
     client_href = client_pages[0].relative_to(dest).as_posix()
