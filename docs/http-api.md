@@ -50,9 +50,9 @@
 
 ## `POST /hooks/git`
 
-Тело — push payload в форме GitHub.
+Тело — push GitHub, `repo:refs_changed` Bitbucket Server или `push.changes` Bitbucket Cloud. Разбор описан в [Bitbucket](bitbucket.md).
 
-Проект ищется по `repository.clone_url` (сравнение с `git_url`), иначе по `repository.name`.
+Проект ищется по clone URL (без пользователя в адресе и без суффикса `.git`), иначе по имени или slug.
 
 | Событие | Ответ |
 | --- | --- |
@@ -62,7 +62,7 @@
 
 `ref` вида `refs/heads/main` становится версией `main`.
 
-Если задан секрет, заголовок `X-Hub-Signature-256` должен быть равен `sha256=` и HMAC-SHA256 тела на этом секрете. Иначе `401`. Нет проекта — `404`. Не JSON — `400`.
+Если задан секрет, заголовок `X-Hub-Signature-256` или `X-Hub-Signature` должен быть равен `sha256=` и HMAC-SHA256 сырого тела. Иначе `401`. Нет проекта — `404`. Не JSON — `400`. Событие без новых коммитов отвечает `ignored` и сборку не ставит.
 
 Подпись считается по сырым байтам тела, до разбора JSON.
 

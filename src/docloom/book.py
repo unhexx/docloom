@@ -25,8 +25,11 @@ class Book:
 
 def build_book(project_root: Path, *, version: str | None = None) -> Book:
     root = Path(project_root).resolve()
-    config = ProjectConfig.load(root / "docloom.yml")
+    config = ProjectConfig.from_root(root)
     guides, guide_warnings = extract_guides(root, config)
+    readme = _readme_page(root)
+    if readme is not None and all(page.path != "README.md" for page in guides):
+        guides = (readme, *guides)
     python = extract_python(root)
     http_pages, http_warnings = extract_openapi(root, config)
     warnings = tuple(sorted(
@@ -48,6 +51,29 @@ def build_book(project_root: Path, *, version: str | None = None) -> Book:
         summary=_summary(config, guides, python.pages, http_pages, diagnostics),
         warnings=warnings,
         status="success_with_warnings" if warnings else "success",
+    )
+
+
+def _readme_page(root: Path) -> Page | None:
+    path = root / "README.md"
+    if not path.is_file():
+        return None
+    text = path.read_text(encoding="utf-8").strip()
+    title = "README"
+    for line in text.splitlines():
+        if line.startswith("# "):
+            title = line[2:].strip() or title
+            break
+    if not text.startswith("#"):
+        text = f"# {title}\n\n{text}"
+    return Page(
+        id="guide:README.md",
+        kind="guide",
+        title=title,
+        path="README.md",
+        anchors=(),
+        source=None,
+        text=text + "\n",
     )
 
 

@@ -47,6 +47,7 @@ docloom build --root samples/demo-lib --out /tmp/demo-lib
 | [Генерация](docs/generation.md) | AST, OpenAPI, гайды |
 | [Публикация](docs/publishing.md) | Тема, поиск, `llms.txt`, манифест |
 | [HTTP API](docs/http-api.md) | Проекты, билды, webhook |
+| [Bitbucket](docs/bitbucket.md) | Автосборка одного репозитория |
 | [Эксплуатация](docs/operations.md) | Свой репозиторий и разбор сбоев |
 | [Разработка](docs/development.md) | Карта кода и тесты |
 

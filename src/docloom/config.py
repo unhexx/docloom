@@ -48,6 +48,36 @@ class ProjectConfig:
             root=path.parent.resolve(),
         )
 
+    @classmethod
+    def from_root(cls, root: Path) -> ProjectConfig:
+        root = Path(root).resolve()
+        path = root / "docloom.yml"
+        if path.is_file():
+            return cls.load(path)
+        return cls.discover(root)
+
+    @classmethod
+    def discover(cls, root: Path) -> ProjectConfig:
+        """Книга без docloom.yml: README, каталог docs и OpenAPI, если они лежат в корне."""
+        root = Path(root).resolve()
+        guides = "docs" if (root / "docs").is_dir() else None
+        python_roots = ("src",) if (root / "src").is_dir() else ()
+        specs = tuple(name for name in ("openapi.yaml", "openapi.yml") if (root / name).is_file())
+        return cls(
+            project=root.name,
+            version=None,
+            language="ru",
+            theme="gitbook",
+            guides=guides,
+            python_roots=python_roots,
+            openapi=specs,
+            exclude=("**/tests/**",),
+            versions_from=(),
+            search=True,
+            llms=True,
+            root=root,
+        )
+
 
 def _as_tuple(value: object) -> tuple[str, ...]:
     if value is None:

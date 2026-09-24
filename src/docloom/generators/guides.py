@@ -72,6 +72,10 @@ def _guide_page(path: Path, rel: str, title: str) -> Page:
     meta, body = _front_matter(raw)
     if isinstance(meta.get("title"), str) and meta["title"].strip():
         title = meta["title"].strip()
+    else:
+        heading = _first_heading(body)
+        if heading and title == _fallback_title(path):
+            title = heading
     body = body.strip()
     if not body.startswith("#"):
         body = f"# {title}\n\n{body}".strip()
@@ -97,6 +101,13 @@ def _front_matter(text: str) -> tuple[dict[str, object], str]:
     if not isinstance(loaded, dict):
         return {}, parts[2].lstrip("\n")
     return loaded, parts[2].lstrip("\n")
+
+
+def _first_heading(text: str) -> str:
+    for line in text.splitlines():
+        if line.startswith("# "):
+            return line[2:].strip()
+    return ""
 
 
 def _fallback_title(path: Path) -> str:

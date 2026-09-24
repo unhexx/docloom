@@ -26,6 +26,10 @@ def main(argv: list[str] | None = None) -> int:
     serve.add_argument("--port", type=int, default=None)
 
     commands.add_parser("worker", help="разбирать очередь билдов")
+    watch = commands.add_parser("watch", help="опрашивать один git и ставить билд")
+    watch.add_argument("--url", default=None)
+    watch.add_argument("--ref", default=None)
+    watch.add_argument("--once", action="store_true")
     args = parser.parse_args(argv)
     if args.command == "build":
         return _build(args.root, args.out, args.version)
@@ -33,6 +37,8 @@ def main(argv: list[str] | None = None) -> int:
         return _serve(args.host, args.port)
     if args.command == "worker":
         return _worker()
+    if args.command == "watch":
+        return _watch(args.url, args.ref, args.once)
     return 2
 
 
@@ -61,4 +67,17 @@ def _worker() -> int:
     from docloom.worker import serve
 
     serve(load_settings())
+    return 0
+
+
+def _watch(url: str | None, ref: str | None, once: bool) -> int:
+    from docloom.watch import serve
+
+    settings = load_settings()
+    serve(
+        settings,
+        url=url if url is not None else settings.watch_url,
+        ref=ref if ref is not None else settings.watch_ref,
+        once=once,
+    )
     return 0

@@ -9,6 +9,7 @@ Docloom собирает сайт документации из Git-ревизи
 | [Генерация](generation.md) | AST, OpenAPI, гайды, диагностика |
 | [Публикация](publishing.md) | HTML, поиск, `llms.txt`, `build.json` |
 | [HTTP API](http-api.md) | Проекты, билды, webhook |
+| [Bitbucket](bitbucket.md) | Автосборка одного репозитория без участия людей |
 | [Эксплуатация](operations.md) | Compose, свой репозиторий, секреты |
 | [Разработка](development.md) | Команды, тесты, карта каталогов |
 

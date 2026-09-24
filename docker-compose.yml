@@ -15,6 +15,8 @@ services:
       DOCLOOM_SYNC_BUILDS: "0"
       DOCLOOM_HOST: 0.0.0.0
       DOCLOOM_PORT: "8000"
+      DOCLOOM_GIT_TOKEN: ${DOCLOOM_GIT_TOKEN:-}
+      DOCLOOM_GIT_SSL_VERIFY: ${DOCLOOM_GIT_SSL_VERIFY:-1}
     volumes:
       - data:/data
       - publish:/publish
@@ -34,6 +36,8 @@ services:
     image: docloom:0.1.0
     command: ["docloom", "worker"]
     environment: *runtime
+    extra_hosts:
+      - "${DOCLOOM_EXTRA_HOST:-localhost:127.0.0.1}"
     volumes:
       - data:/data
       - publish:/publish
@@ -53,6 +57,40 @@ services:
       timeout: 3s
       retries: 20
       start_period: 15s
+    restart: unless-stopped
+
+  watch:
+    build:
+      context: .
+      target: runtime
+    image: docloom:0.1.0
+    command: ["docloom", "watch"]
+    environment:
+      <<: *runtime
+      DOCLOOM_WATCH_URL: ${DOCLOOM_WATCH_URL:-}
+      DOCLOOM_WATCH_REF: ${DOCLOOM_WATCH_REF:-master}
+      DOCLOOM_WATCH_INTERVAL: ${DOCLOOM_WATCH_INTERVAL:-60}
+    extra_hosts:
+      - "${DOCLOOM_EXTRA_HOST:-localhost:127.0.0.1}"
+    volumes:
+      - data:/data
+      - publish:/publish
+      - sources:/sources
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import os,time; age=time.time()-os.path.getmtime('/data/watch-heartbeat'); raise SystemExit(0 if age < 180 else 1)",
+        ]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
     restart: unless-stopped
 
   nginx:
