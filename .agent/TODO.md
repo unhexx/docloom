@@ -29,7 +29,7 @@
 
 ## Спринт 5 — compose
 
-- [ ] C5: Dockerfile, nginx, healthcheck, smoke `/sites/demo-lib/latest/`
+- [x] C5: Dockerfile, nginx, healthcheck, smoke `/sites/demo-lib/latest/`
 
 ## Спринт 6 — релиз
 

@@ -80,6 +80,10 @@ class Store:
             project_id = int(cursor.lastrowid)
         return self.public_project(self.get_project(project_id))
 
+    def list_projects(self) -> list[dict[str, object]]:
+        rows = self.conn.execute("SELECT * FROM projects ORDER BY id").fetchall()
+        return [self.public_project(row) for row in rows]
+
     def get_project(self, project_id: int) -> sqlite3.Row:
         row = self.conn.execute("SELECT * FROM projects WHERE id = ?", (project_id,)).fetchone()
         if row is None:

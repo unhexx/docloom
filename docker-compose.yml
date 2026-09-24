@@ -1,0 +1,86 @@
+name: docloom
+
+services:
+  api:
+    build:
+      context: .
+      target: runtime
+    image: docloom:0.1.0
+    command: ["docloom", "serve", "--host", "0.0.0.0", "--port", "8000"]
+    environment: &runtime
+      DOCLOOM_DATA: /data
+      DOCLOOM_PUBLISH: /publish
+      DOCLOOM_SOURCES: /sources
+      DOCLOOM_SOURCE_ROOTS: /opt/docloom/samples:/sources
+      DOCLOOM_SYNC_BUILDS: "0"
+      DOCLOOM_HOST: 0.0.0.0
+      DOCLOOM_PORT: "8000"
+    volumes:
+      - data:/data
+      - publish:/publish
+      - sources:/sources
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      target: runtime
+    image: docloom:0.1.0
+    command: ["docloom", "worker"]
+    environment: *runtime
+    volumes:
+      - data:/data
+      - publish:/publish
+      - sources:/sources
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import os,time; age=time.time()-os.path.getmtime('/data/worker-heartbeat'); raise SystemExit(0 if age < 30 else 1)",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 15s
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - publish:/usr/share/nginx/html/sites:ro
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+
+  test:
+    build:
+      context: .
+      target: test
+    profiles: ["test"]
+    command: ["pytest", "-q", "-p", "no:cacheprovider"]
+
+volumes:
+  data:
+  publish:
+  sources:

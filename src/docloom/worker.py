@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import time
 
-from docloom.db import Store
+from docloom.db import Store, utcnow
 from docloom.jobs import execute_build
 from docloom.settings import Settings
 
@@ -22,6 +22,9 @@ def drain(settings: Settings, *, limit: int = 100) -> int:
 
 
 def serve(settings: Settings, *, poll: float = 1.0) -> None:
+    beat = settings.data_dir / "worker-heartbeat"
+    beat.parent.mkdir(parents=True, exist_ok=True)
     while True:
+        beat.write_text(utcnow() + "\n", encoding="utf-8")
         if drain(settings, limit=1) == 0:
             time.sleep(poll)
