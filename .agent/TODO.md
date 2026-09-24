@@ -15,8 +15,8 @@
 
 ## Спринт 2 — книга
 
-- [ ] C2: OpenAPI 3, гайды, склейка SUMMARY
-- [ ] Битый spec → `success_with_warnings` и страница Diagnostics
+- [x] C2: OpenAPI 3, гайды, склейка SUMMARY
+- [x] Битый spec → `success_with_warnings` и страница Diagnostics
 
 ## Спринт 3 — издатель
 
