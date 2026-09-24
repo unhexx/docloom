@@ -1,0 +1,14 @@
+project: demo-lib
+version: "0.1.0"
+language: ru
+theme: gitbook
+sources:
+  guides: docs
+  python: [src]
+  openapi: [openapi.yaml]
+exclude:
+  - "**/tests/**"
+publish:
+  versions_from: [tags, default_branch]
+search: true
+llms: true
