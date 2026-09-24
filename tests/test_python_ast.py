@@ -48,6 +48,7 @@ def test_demo_has_client_class_and_identical_rerun() -> None:
     ]
     assert source_line.startswith("class Client")
     assert "class Client" in client.text
+    assert r"Client.\_\_init\_\_" in client.text
 
     connect = next(page for page in first.pages if page.title == "Client.connect")
     assert connect.kind == "python.method"
