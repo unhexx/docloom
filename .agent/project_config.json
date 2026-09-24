@@ -1,0 +1,130 @@
+{
+  "question_pool": {
+    "frequency": "every_3_cycles",
+    "N": 3,
+    "processors": [
+      "product_owner",
+      "project_manager"
+    ],
+    "last_processed_cycle": 0
+  },
+  "meta_optimizer": {
+    "enabled": true,
+    "frequency": "after_every_done_cycle",
+    "min_quality": {
+      "confidence": 0.85,
+      "tests_failed": 0,
+      "process_violations": 0
+    },
+    "auto_apply_safe": true,
+    "max_proposals_per_cycle": 3,
+    "last_harvested_cycle": 0
+  },
+  "daily_decomposition_ritual": {
+    "enabled": true,
+    "frequency": "every_10_cycles",
+    "N": 10,
+    "last_ritual_cycle": 0
+  },
+  "playbooks": {
+    "enabled": true,
+    "auto_curate": true,
+    "max_bullets_per_playbook": 50,
+    "default_k": 5,
+    "min_effectiveness": 0.5,
+    "relevance": "substring",
+    "scopes": ["global", "role:*", "tool:*", "phase:*"]
+  },
+  "git": {
+    "strict_multi_repo": false,
+    "prefer_preflight_script": true
+  },
+  "context_budget": {
+    "cold_start_tokens": 16000,
+    "next_input_files_tokens": 12000,
+    "compress_when_over": true,
+    "encoding": null,
+    "model": null,
+    "prompt_body_chars": 8000,
+    "snap_json_chars": 4000,
+    "knowledge_budget_tokens": 800,
+    "prompt_token_cap": 8000
+  },
+  "state": {
+    "max_working_json_bytes": 8192,
+    "auto_compact_on_init": true
+  },
+  "profiles": {
+    "single_repo_linux": {
+      "git": {
+        "strict_multi_repo": false
+      }
+    },
+    "multi_repo_windows": {
+      "git": {
+        "strict_multi_repo": true
+      }
+    },
+    "grok_parallel": {
+      "git": {
+        "strict_multi_repo": false
+      },
+      "parallel": true
+    }
+  },
+  "proxy": {
+    "mode": "required",
+    "listen": "127.0.0.1:8110",
+    "pxpipe_base": "http://127.0.0.1:8100",
+    "upstream_fallback": "https://cli-chat-proxy.grok.com",
+    "bind": "loopback",
+    "timeout_s": 900,
+    "compress_body": true,
+    "body_budget_tokens": 24000,
+    "keep_recent_turns": 2,
+    "exact_cache": true,
+    "fidelity": true,
+    "plugins": {
+      "llmlingua": false,
+      "sqlite_vec": false
+    }
+  },
+  "supervisor": {
+    "adapter": "mock",
+    "max_cycles": 5,
+    "max_role_retries": 2,
+    "role_timeout_s": 900,
+    "pr": {
+      "base": "main",
+      "draft": false,
+      "title_prefix": "agentix:"
+    },
+    "adapters": {
+      "grok": {
+        "command": "grok"
+      },
+      "cursor": {
+        "command": null
+      },
+      "blackbox": {
+        "command": "blackbox",
+        "prompt_mode": "p",
+        "extra_args": []
+      }
+    },
+    "block_process_tags": [
+      "secrets_exposure",
+      "destructive_prod"
+    ],
+    "parallel": {
+      "base": "main",
+      "integration_branch": "feature/integration-parallel",
+      "wt_base": null,
+      "require_owned_paths": true,
+      "serial": true,
+      "concurrent": false,
+      "push": false,
+      "lease_ttl_s": 7200
+    }
+  }
+}
