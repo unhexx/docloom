@@ -15,7 +15,7 @@ data/
 .env
 
 # Контур Agentix: симлинк на SSOT и служебные артефакты цикла
-agentic_loop_template/
+agentic_loop_template
 .agent/handoff_*.json
 .agent/last_handoff.json
 .agent/worktrees/
