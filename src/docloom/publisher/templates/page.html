@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="{{ language }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title }} — {{ project }}</title>
+  <link rel="stylesheet" href="{{ asset_prefix }}assets/theme.css">
+  <link rel="stylesheet" href="{{ asset_prefix }}assets/pygments.css">
+  <script>
+    (function () {
+      var saved = localStorage.getItem("docloom-theme");
+      if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+        document.documentElement.setAttribute("data-theme", "dark");
+      }
+    })();
+  </script>
+</head>
+<body>
+  <header class="top">
+    <button class="menu-button" id="docloom-menu" type="button">{{ ui.menu }}</button>
+    <a class="brand" href="{{ asset_prefix }}index.html">{{ project }}</a>
+    <nav class="versions" aria-label="{{ ui.versions }}">
+      {% for item in versions %}
+        {% if item == version %}
+          <span class="version current">{{ item }}</span>
+        {% else %}
+          <a class="version" href="{{ asset_prefix }}../{{ item }}/index.html">{{ item }}</a>
+        {% endif %}
+      {% endfor %}
+    </nav>
+    {% if search_enabled %}
+    <div class="search">
+      <input id="docloom-search" type="search" placeholder="{{ ui.search }}" autocomplete="off" aria-label="{{ ui.search }}">
+      <div id="docloom-results" class="search-results" hidden></div>
+    </div>
+    {% endif %}
+    <button class="theme-button" id="docloom-theme" type="button">{{ ui.theme }}</button>
+  </header>
+  <aside class="sidebar">
+    {% for group in groups %}
+      <h2>{{ group.title }}</h2>
+      <ul>
+        {% for item in group["items"] %}
+          <li><a href="{{ asset_prefix }}{{ item.href }}"{% if item.href == active %} class="active"{% endif %}>{{ item.title }}</a></li>
+        {% endfor %}
+      </ul>
+    {% endfor %}
+  </aside>
+  <main>
+    {{ content }}
+    <nav class="pager">
+      {% if prev %}
+        <a href="{{ asset_prefix }}{{ prev.href }}">← {{ prev.title }}</a>
+      {% else %}
+        <span></span>
+      {% endif %}
+      {% if next %}
+        <a href="{{ asset_prefix }}{{ next.href }}">{{ next.title }} →</a>
+      {% endif %}
+    </nav>
+  </main>
+  <aside class="toc">
+    <h2>{{ ui.on_page }}</h2>
+    {{ toc }}
+  </aside>
+  {% if search_enabled %}
+  <script>window.DOCLOOM_SEARCH = {{ search_href | tojson }}; window.DOCLOOM_ROOT = {{ asset_prefix | tojson }};</script>
+  <script src="{{ asset_prefix }}assets/search.js"></script>
+  {% endif %}
+</body>
+</html>

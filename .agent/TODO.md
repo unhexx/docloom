@@ -20,7 +20,7 @@
 
 ## Спринт 3 — издатель
 
-- [ ] C3: HTML-тема, поиск, `llms.txt`, `llms-full.txt`, `build.json`
+- [x] C3: HTML-тема, поиск, `llms.txt`, `llms-full.txt`, `build.json`
 
 ## Спринт 4 — control plane
 
